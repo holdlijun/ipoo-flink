@@ -1,0 +1,6 @@
+com\streaming\StreamingJob.class
+com\BatchJob.class
+com\streaming\SocketStreamingJob$LineSplitter.class
+com\streaming\StreamingJob$1.class
+com\streaming\StreamingJob$2.class
+com\streaming\SocketStreamingJob.class
