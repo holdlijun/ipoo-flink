@@ -2,6 +2,7 @@ package example;
 
 import com.sun.org.apache.xml.internal.resolver.Catalog;
 import common.Item;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeHint;
@@ -18,14 +19,19 @@ import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.table.catalog.CatalogManager;
+import org.apache.flink.util.CollectionUtil;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 import source.MyStremingSource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-
+/**
+ * Flink Table Api  & SQL
+ *
+ */
 public class TableStremingDemo {
 
     public static void main(String[] args) throws Exception {
@@ -45,7 +51,6 @@ public class TableStremingDemo {
         };
         final OutputTag<Item> old = new OutputTag<Item>("old") {
         };
-
         SingleOutputStreamOperator<Item> sideOutputData = source.process(new ProcessFunction<Item, Item>() {
             @Override
             public void processElement(Item value, Context ctx, Collector<Item> out) throws Exception {
@@ -57,12 +62,11 @@ public class TableStremingDemo {
             }
         });
 
+        DataStream<Item> evenStream = sideOutputData.getSideOutput(even);
+        DataStream<Item> oldStream = sideOutputData.getSideOutput(old);
 
-        DataStream<Item> evenS = sideOutputData.getSideOutput(even);
-        DataStream<Item> oldS = sideOutputData.getSideOutput(old);
-
-        bsTableEnv.registerDataStream("evenTable",evenS , "name,id");
-        bsTableEnv.registerDataStream("oddTable", oldS, "name,id");
+        bsTableEnv.registerDataStream("evenTable",evenStream , "name,id");
+        bsTableEnv.registerDataStream("oddTable", oldStream, "name,id");
 
 
         Table queryTable = bsTableEnv.sqlQuery("select a.id,a.name,b.id,b.name from evenTable as a join oddTable as b on a.name = b.name");
